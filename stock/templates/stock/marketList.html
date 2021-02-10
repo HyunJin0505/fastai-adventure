@@ -1,3 +1,5 @@
+<!-- market_list_cospi.html의 코드를 붙임 -->
+
 {% extends "stock/base.html "%}
 
 {% block contents %}
@@ -7,6 +9,12 @@
                     <!-- Page Heading -->
                     <h1 class="h3 mb-2 text-gray-800">Stock Market List</h1>
                     <h4 class="mb-4">Search stock item whatever you want!<br/> KOSPI </h4>
+
+                    <form class="form-inline my-2 my-lg-0" action="{% url 'market_list_for_search' %}" method="post">
+                        {% csrf_token %}
+                        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="q" value="{{q}}">
+                        <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
+                    </form>
 
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
@@ -21,7 +29,6 @@
                                     <thead>
                                         <tr class="text-primary bg-gray-100"> 
                                             <th>STOCK</th>
-                                            <th>PRESENT PRICE</th>
                                             <th>FLUCTUATION</th>
                                             <th>FLUCTUATION RATE</th>
                                         </tr>
@@ -29,56 +36,71 @@
                                     <tfoot>
                                         <tr class="text-primary bg-gray-100"> 
                                             <th>STOCK</th>
-                                            <th>PRESENT PRICE</th>
                                             <th>FLUCTUATION</th>
                                             <th>FLUCTUATION RATE</th>
                                         </tr>
                                     </tfoot>
                                     <tbody>
-                                        <tr>
+                                        <!-- <tr>
                                             <td>Apple</td>
                                             <td>500000</td>
                                             <td class="text-danger">123</td>
                                             <td class="text-danger">4.5↑</td>
-                                        </tr>
+                                        </tr> -->
+                                        {% for stock in posts %}
                                         <tr>
-                                            <td>Hermione Butler</td>
-                                            <td>Regional Director</td>
-                                            <td>London</td>
-                                            <td>47</td>
+                                            <!-- <td>{{ forloop.counter }}</td> -->
+                                            <td>
+                                                <a class = wow href="{% url 'stock_detail' stock_code=stock.stock_code %}">{{ stock.company_name }}</a>
+                                            </td>
+                                            <td class="text-danger">{{ stock.fluctuation_width }}</td>
+                                            {% if stock.increase %}
+                                            <td class="text-danger">{{ stock.increase }}</td>
+                                            {% else %}
+                                            <td class="text-danger"> {{ stock.decrease }}</td>
+                                            {% endif %}
                                         </tr>
-                                        <tr>
-                                            <td>Lael Greer</td>
-                                            <td>Systems Administrator</td>
-                                            <td>London</td>
-                                            <td>21</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Jonas Alexander</td>
-                                            <td>Developer</td>
-                                            <td>San Francisco</td>
-                                            <td>30</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Shad Decker</td>
-                                            <td>Regional Director</td>
-                                            <td>Edinburgh</td>
-                                            <td>51</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Michael Bruce</td>
-                                            <td>Javascript Developer</td>
-                                            <td>Singapore</td>
-                                            <td>29</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Donna Snider</td>
-                                            <td>Customer Support</td>
-                                            <td>New York</td>
-                                            <td>27</td>
-                                        </tr>
+                                        {% endfor %}       
                                     </tbody>
                                 </table>
+                                        <!-- 페이징처리 시작 -->
+                                <ul class="pagination justify-content-center">
+                                    <!-- 이전페이지 -->
+                                    {% if posts.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ posts.previous_page_number }}">이전</a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <a class="page-link" tabindex="-1" aria-disabled="true" href="#">이전</a>
+                                    </li>
+                                    {% endif %}
+                                    <!-- 페이지리스트 -->
+                                    {% for page_number in posts.paginator.page_range %}
+                                    {% if page_number >= posts.number|add:-5 and page_number <= posts.number|add:5 %}
+                                        {% if page_number == posts.number %}
+                                        <li class="page-item active" aria-current="page">
+                                            <a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a> <span> </span>
+                                        </li>
+                                        {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a> <span>  </span>
+                                        </li>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% endfor %}
+                                    <!-- 다음페이지 -->
+                                    {% if posts.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ posts.next_page_number }}">다음</a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <a class="page-link" tabindex="-1" aria-disabled="true" href="#">다음</a>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                                <!-- 페이징처리 끝 -->
                             </div>
                         </div>
                     </div>
