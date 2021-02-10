@@ -31,9 +31,6 @@ def main(request):
     return render(request, 'stock/main.html')
 
 # 새로운 템플릿 확인용 주소 시작
-def register(request):
-    return render(request, 'stock/register.html')
-
 def home(request):
     return render(request, 'stock/home.html')
 
@@ -51,6 +48,13 @@ def reviewcreate(request):
 
 def reviewlist(request):
     return render(request, 'stock/review_list.html')
+
+def qnacreate(request):
+    return render(request, 'stock/qnaCreate.html')
+
+def qnalist(request):
+    return render(request, 'stock/qnaList.html')
+
 # 새로운 템플릿 확인용 주소 끝   
 
 
@@ -221,14 +225,14 @@ def post_new(request):
         form = PostForm()
     return render(request, 'blog/post_edit.html', {'form': form})
 
-
 def bookmark_list(request):
     if request.user.is_authenticated:
         print('로그인 성공')
         print(request.user)
         print(request.user.username)
     else:
-        print('dkdlsp')
+        #로그인 되어 있지 않으면 로그인 페이지로 이동 
+        return redirect('login')
 
     #슈퍼계정으로 로그인 하면 로그인 되어 있다고 함 근데 일반 계정으로 로그인 하면 로그인 안되어 있다고 함 
     # print(request.user)
@@ -240,10 +244,9 @@ def bookmark_list(request):
     for bookmark in bookmarks :
         print(bookmark.stock.stock_code)
 
-
     return render(request, 'stock/bookmark_list.html',{'bookmarks':bookmarks, } )
 
-#이거는 그냥 테스트 해볼려고 만든거 
+
 def bookmarkInOut(user,stock):
     # user = User.objects.get(username=name)
     #print(user,stock)
@@ -447,19 +450,37 @@ def review(request):
             review = form.save(commit=False)
             review.create_date = timezone.now()
             review.save()
-            form = Reviewform()
-            context = {
-                review_list :'review_list',
-                form : 'form',
-            }
-    else:
-        form = Reviewform()
-        context = {
-            review_list :'review_list',
-            form : 'form',
-        }
-    print(len(review_list))
-    return render(request, 'stock/review.html',context)
+            return redirect('review')
+
+    form = Reviewform()
+    context = {
+        'review_list' : review_list,
+        'form' : form,
+    }
+
+    return render(request, 'stock/review_list.html',context)
+
+def review_create(request):
+    
+    if not request.user.is_authenticated:
+        return redirect(signup)
+
+    if request.method == 'POST':
+        form = Reviewform(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.create_date = timezone.now()
+            review.save()
+            return redirect('review')
+    
+    form = Reviewform()
+    context = {
+        'form' : form,
+    }
+
+    return render(request, 'stock/review_create.html',context)
+
+
 
 
 #### 아래는 모두 야후 파이낸스 api 불러왔던 코드 
